@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Vibe</string>
+    <string name="song_name">Song Name</string>
+    <string name="artist">artist</string>
+</resources>

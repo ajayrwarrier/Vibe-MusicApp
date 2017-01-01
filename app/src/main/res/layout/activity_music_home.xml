@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_music_home"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    tools:context="com.example.ajayrwarrier.vibe.MusicHomeActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:layout_width="0dp"
+        android:layout_height="150dp"
+        android:theme="?attr/actionBarTheme"
+        android:minHeight="?attr/actionBarSize"
+        android:fitsSystemWindows="true"
+        android:id="@+id/toolbar"
+        android:background="@drawable/toolbar_background"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        />
+
+    <TextView
+        android:text="@string/artist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/nowArtist"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/nowSong"
+        app:layout_constraintLeft_toLeftOf="@+id/nowSong"/>
+
+    <TextView
+        android:text="@string/song_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/nowSong"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="@+id/toolbar"
+        app:layout_constraintTop_toTopOf="@+id/toolbar"
+        android:layout_marginTop="24dp"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@android:drawable/ic_media_play"
+        android:id="@+id/playButton"
+        android:background="@android:color/transparent"
+        app:layout_constraintLeft_toLeftOf="@+id/toolbar"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@+id/nowArtist"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@android:drawable/ic_media_next"
+        android:background="@android:color/transparent"
+        android:id="@+id/nextButton"
+        android:layout_marginStart="24dp"
+        app:layout_constraintTop_toTopOf="@+id/playButton"
+        app:layout_constraintLeft_toRightOf="@+id/playButton"
+        android:layout_marginLeft="24dp"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@android:drawable/ic_media_previous"
+        android:background="@android:color/transparent"
+        android:id="@+id/previousButton"
+        app:layout_constraintTop_toTopOf="@+id/playButton"
+        app:layout_constraintRight_toLeftOf="@+id/playButton"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintHorizontal_bias="0.82"
+        android:layout_marginRight="24dp"
+        app:layout_constraintVertical_bias="0.75"/>
+
+    <ListView
+        android:layout_height="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/song_list"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        android:layout_width="0dp"/>
+</android.support.constraint.ConstraintLayout>
