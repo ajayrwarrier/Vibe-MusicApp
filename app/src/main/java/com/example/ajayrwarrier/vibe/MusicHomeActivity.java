@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -34,7 +36,7 @@ import static android.R.attr.thumbnail;
 import static android.R.drawable.ic_media_play;
 public class MusicHomeActivity extends AppCompatActivity  {
     private ArrayList<Song> songList = new ArrayList<>();
-    private MusicService musicSrv;
+    public static MusicService musicSrv;
     private Intent playIntent;
     private boolean isPlaying  = false;
     private boolean musicBound = false;
@@ -50,13 +52,15 @@ public class MusicHomeActivity extends AppCompatActivity  {
     ImageButton nextButton;
     @BindView(R.id.playButton)
     ImageButton playPauseButton;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_home);
         ButterKnife.bind(this);
         getSongList();
-        Collections.sort(songList, new Comparator<Song>() {
+                Collections.sort(songList, new Comparator<Song>() {
             public int compare(Song a, Song b) {
                 return a.getTitle().compareTo(b.getTitle());
             }
@@ -104,13 +108,19 @@ public class MusicHomeActivity extends AppCompatActivity  {
                 isPlaying = !isPlaying;
             }
         });
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {if(musicSrv.isPng()){
+                Intent intent = new Intent(view.getContext(),NowPlayingActivity.class);
+                intent.putExtra("check",1);
+                startActivity(intent);
+            }
+            }
+        });
     }
     public void getSongList() {
         ContentResolver musicResolver = getContentResolver();
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        ContentResolver musicResolve = getContentResolver();
-        Uri smusicUri = android.provider.MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
-
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
         if (musicCursor != null && musicCursor.moveToFirst()) {
             //get columns
@@ -161,8 +171,15 @@ public class MusicHomeActivity extends AppCompatActivity  {
         musicSrv = null;
         super.onDestroy();
     }
-
-    private void playNext(){
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(musicSrv!=null){
+            if(musicSrv.isPng())
+                ToolUpdate(musicSrv.getSong());
+        }
+            }
+       private void playNext(){
         musicSrv.playNext();
     }
     private void playPrev(){

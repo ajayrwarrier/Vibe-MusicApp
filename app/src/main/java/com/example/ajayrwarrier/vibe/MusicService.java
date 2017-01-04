@@ -114,4 +114,21 @@ public class MusicService extends Service implements
         if(songPosn>=songs.size()) songPosn=0;
         playSong();
     }
+    public MediaPlayer getPlayer(){
+        return player;
+    }
+    public void changeSong(Song song){
+        player.reset();
+        Song playSong = song;
+        long currSong = playSong.getID();
+        Uri trackUri = ContentUris.withAppendedId(
+                android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                currSong);
+        try {
+            player.setDataSource(getApplicationContext(), trackUri);
+        } catch (Exception e) {
+            Log.e("MUSIC SERVICE", "Error setting data source", e);
+        }
+        player.prepareAsync();
+    }
 }
