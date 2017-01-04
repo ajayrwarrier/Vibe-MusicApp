@@ -55,11 +55,17 @@ public class NowPlayingActivity extends AppCompatActivity {
         startTime.setText(R.string.start_time);
         totalTime.setText("");
         musService = musicSrv;
-        if (musService.isPng()) {
-            if(check==1){
-            playButton.setImageResource(android.R.drawable.ic_media_pause);
+        if(check==1){
             currSong = musService.getSong();
+        if (musService.isPng()) {
+            playButton.setImageResource(android.R.drawable.ic_media_pause);
             UpdateUi(currSong,check);}
+            else{
+            playButton.setImageResource(android.R.drawable.ic_media_play);
+            musicSrv.seek(musicSrv.getPosn());
+            UpdateUi(currSong,1);
+
+        }
         }
         previousButton.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -110,11 +110,11 @@ public class MusicHomeActivity extends AppCompatActivity  {
         });
         toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {if(musicSrv.isPng()){
+            public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(),NowPlayingActivity.class);
                 intent.putExtra("check",1);
                 startActivity(intent);
-            }
+
             }
         });
     }
@@ -175,8 +175,14 @@ public class MusicHomeActivity extends AppCompatActivity  {
     public void onResume() {
         super.onResume();
         if(musicSrv!=null){
-            if(musicSrv.isPng())
+            if(musicSrv.isPng()){
+                isPlaying=true;
+                ToolUpdate(musicSrv.getSong());}
+            else{
+                isPlaying=false;
+                playPauseButton.setImageResource(android.R.drawable.ic_media_play);
                 ToolUpdate(musicSrv.getSong());
+            }
         }
             }
        private void playNext(){
