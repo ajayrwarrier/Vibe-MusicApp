@@ -1,4 +1,6 @@
 package com.example.ajayrwarrier.vibe;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.Intent;
@@ -9,8 +11,8 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 /**
@@ -22,11 +24,18 @@ public class MusicService extends Service implements
     private MediaPlayer player;
     private ArrayList<Song> songs;
     private int songPosn;
+    LocalBroadcastManager broadcaster;
+    static final public String COPA_RESULT = "REQUEST_PROCESSED";
+    private static final int NOTIFY_ID = 1;
     private final IBinder musicBind = new MusicBinder();
     @Override
     public void onCreate() {
         super.onCreate();
+        broadcaster = LocalBroadcastManager.getInstance(this);
         songPosn = 0;
+        if (player == null) {
+            player = new MediaPlayer();
+        }
         player = new MediaPlayer();
         initMusicPlayer();
     }
@@ -38,19 +47,31 @@ public class MusicService extends Service implements
     @Override
     public boolean onUnbind(Intent intent) {
         player.stop();
+        player.reset();
         player.release();
         return false;
     }
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
+        if (player.getCurrentPosition() > 0) {
+            mediaPlayer.reset();
+            playNext();
+        }
     }
     @Override
     public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+        mediaPlayer.reset();
         return false;
     }
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
         mediaPlayer.start();
+        makeNotification();
+        sendResult(getSong());
+    }
+    @Override
+    public void onDestroy() {
+        stopForeground(true);
     }
     public void initMusicPlayer() {
         player.setWakeMode(getApplicationContext(),
@@ -71,6 +92,7 @@ public class MusicService extends Service implements
     public void playSong() {
         player.reset();
         Song playSong = songs.get(songPosn);
+        makeNotification();
         long currSong = playSong.getID();
         Uri trackUri = ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -85,7 +107,9 @@ public class MusicService extends Service implements
     public void setSong(int songIndex) {
         songPosn = songIndex;
     }
-    public Song getSong(){ return songs.get(songPosn);}
+    public Song getSong() {
+        return songs.get(songPosn);
+    }
     public int getPosn() {
         return player.getCurrentPosition();
     }
@@ -104,31 +128,39 @@ public class MusicService extends Service implements
     public void go() {
         player.start();
     }
-    public void playPrev(){
+    public void playPrev() {
         songPosn--;
-        if(songPosn<=0) songPosn=songs.size()-1;
+        if (songPosn <= 0) songPosn = songs.size() - 1;
         playSong();
     }
-    public void playNext(){
+    public void playNext() {
         songPosn++;
-        if(songPosn>=songs.size()) songPosn=0;
+        if (songPosn >= songs.size()) songPosn = 0;
         playSong();
     }
-    public MediaPlayer getPlayer(){
+    public MediaPlayer getPlayer() {
         return player;
     }
-    public void changeSong(Song song){
-        player.reset();
-        Song playSong = song;
-        long currSong = playSong.getID();
-        Uri trackUri = ContentUris.withAppendedId(
-                android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                currSong);
-        try {
-            player.setDataSource(getApplicationContext(), trackUri);
-        } catch (Exception e) {
-            Log.e("MUSIC SERVICE", "Error setting data source", e);
-        }
-        player.prepareAsync();
+    public void makeNotification() {
+        Intent notIntent = new Intent(this, NowPlayingActivity.class);
+        notIntent.putExtra("check", 1);
+        notIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        PendingIntent pendInt = PendingIntent.getActivity(this, 0,
+                notIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Notification.Builder builder = new Notification.Builder(this);
+        builder.setContentIntent(pendInt)
+                .setSmallIcon(android.R.drawable.ic_media_play)
+                .setTicker(getSong().getTitle())
+                .setOngoing(true)
+                .setContentTitle("Playing")
+                .setContentText(getSong().getTitle());
+        Notification not = builder.build();
+        startForeground(NOTIFY_ID, not);
+    }
+    public void sendResult(Song song) {
+        Intent intent = new Intent(COPA_RESULT);
+        if (song != null)
+            intent.putExtra("song", song);
+        broadcaster.sendBroadcast(intent);
     }
 }

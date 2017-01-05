@@ -10,9 +10,11 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import wseemann.media.FFmpegMediaMetadataRetriever;
+
 import static com.example.ajayrwarrier.vibe.MusicHomeActivity.musicSrv;
 public class NowPlayingActivity extends AppCompatActivity {
     @BindView(R.id.nameView)
@@ -46,34 +48,33 @@ public class NowPlayingActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         if (getIntent().getExtras() != null) {
             check = getIntent().getExtras().getInt("check");
-            Toast.makeText(this,String.valueOf(check), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, String.valueOf(check), Toast.LENGTH_SHORT).show();
             currentSong = getIntent().getExtras().getParcelable("currSong");
-            position=getIntent().getExtras().getInt("position");
-            if(check==2){
-            UpdateUi(currentSong,check);}
+            position = getIntent().getExtras().getInt("position");
+            if (check == 2) {
+                UpdateUi(currentSong, check);
+            }
         }
         startTime.setText(R.string.start_time);
         totalTime.setText("");
         musService = musicSrv;
-        if(check==1){
+        if (check == 1) {
             currSong = musService.getSong();
-        if (musService.isPng()) {
-            playButton.setImageResource(android.R.drawable.ic_media_pause);
-            UpdateUi(currSong,check);}
-            else{
-            playButton.setImageResource(android.R.drawable.ic_media_play);
-            musicSrv.seek(musicSrv.getPosn());
-            UpdateUi(currSong,1);
-
-        }
+            if (musService.isPng()) {
+                playButton.setImageResource(android.R.drawable.ic_media_pause);
+                UpdateUi(currSong, check);
+            } else {
+                playButton.setImageResource(android.R.drawable.ic_media_play);
+                musicSrv.seek(musicSrv.getPosn());
+                UpdateUi(currSong, 1);
+            }
         }
         previousButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 musService.playPrev();
                 playButton.setImageResource(android.R.drawable.ic_media_pause);
-                UpdateUi(musicSrv.getSong(),3);
-
+                UpdateUi(musicSrv.getSong(), 3);
             }
         });
         nextButton.setOnClickListener(new View.OnClickListener() {
@@ -81,27 +82,26 @@ public class NowPlayingActivity extends AppCompatActivity {
             public void onClick(View view) {
                 musService.playNext();
                 playButton.setImageResource(android.R.drawable.ic_media_pause);
-                UpdateUi(musicSrv.getSong(),3);
+                UpdateUi(musicSrv.getSong(), 3);
             }
         });
         playButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                if(check==2){
+                if (check == 2) {
                     musicSrv.setSong(position);
                     musService.playSong();
+                    musicSrv.makeNotification();
                     playButton.setImageResource(android.R.drawable.ic_media_pause);
-                    UpdateUi(musicSrv.getSong(),3);
-                    check =1;
-                }
-               else if (musService.isPng()) {
+                    UpdateUi(musicSrv.getSong(), 3);
+                    check = 1;
+                } else if (musService.isPng()) {
                     musicSrv.pausePlayer();
                     playButton.setImageResource(android.R.drawable.ic_media_play);
-                }else{
+                } else {
                     musicSrv.seek(musicSrv.getPosn());
                     musicSrv.go();
                     playButton.setImageResource(android.R.drawable.ic_media_pause);
                 }
-
             }
         });
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -126,9 +126,11 @@ public class NowPlayingActivity extends AppCompatActivity {
         }
     };
     public void seekUpdation() {
-        startTime.setText(getTimeString(musService.getPosn()));
-        seekBar.setProgress(musService.getPosn());
-        seekHandler.postDelayed(run, 1);
+        if (musService != null) {
+            startTime.setText(getTimeString(musService.getPosn()));
+            seekBar.setProgress(musService.getPosn());
+            seekHandler.postDelayed(run, 1);
+        }
     }
     private String getTimeString(long millis) {
         StringBuffer buf = new StringBuffer();
@@ -140,33 +142,35 @@ public class NowPlayingActivity extends AppCompatActivity {
                 .append(String.format("%02d", seconds));
         return buf.toString();
     }
-    private void UpdateUi(Song currSong,int check) {
-if(currSong!=null){
-        nameSong.setText(currSong.getTitle());
-        nameArtist.setText(currSong.getArtist());
-        FFmpegMediaMetadataRetriever retriever = new FFmpegMediaMetadataRetriever();
-        retriever.setDataSource(currSong.getPath());
-        byte[] data = retriever.getEmbeddedPicture();
-        if (data != null) {
-            albumArt.setImageBitmap(BitmapFactory.decodeByteArray(data, 0, data.length));
-        } else {
-            albumArt.setImageResource(android.R.drawable.ic_menu_slideshow);
-            retriever.release();
+    private void UpdateUi(Song currSong, int check) {
+        if (currSong != null) {
+            nameSong.setText(currSong.getTitle());
+            nameArtist.setText(currSong.getArtist());
+            FFmpegMediaMetadataRetriever retriever = new FFmpegMediaMetadataRetriever();
+            retriever.setDataSource(currSong.getPath());
+            byte[] data = retriever.getEmbeddedPicture();
+            if (data != null) {
+                albumArt.setImageBitmap(BitmapFactory.decodeByteArray(data, 0, data.length));
+            } else {
+                albumArt.setImageResource(R.drawable.no_thumbnail);
+                retriever.release();
+            }
+            if (check == 1) {
+                seekUpdation();
+                totalTime.setText(getTimeString(musService.getDur()));
+                seekBar.setMax(musService.getDur());
+            }
+            if (check == 3) {
+                MediaPlayer mediaPlayer = musService.getPlayer();
+                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    public void onPrepared(MediaPlayer mp) {
+                        musicSrv.go();
+                        seekUpdation();
+                        totalTime.setText(getTimeString(musService.getDur()));
+                        seekBar.setMax(musService.getDur());
+                    }
+                });
+            }
         }
-    if(check==1){
-    seekUpdation();
-    totalTime.setText(getTimeString(musService.getDur()));
-    seekBar.setMax(musService.getDur());}
-        if(check==3){
-            MediaPlayer mediaPlayer = musService.getPlayer();
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                public void onPrepared(MediaPlayer mp) {
-                    musicSrv.go();
-                    seekUpdation();
-                    totalTime.setText(getTimeString(musService.getDur()));
-                    seekBar.setMax(musService.getDur());
-                }
-            });
-        }}
     }
 }

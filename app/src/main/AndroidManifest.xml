@@ -22,7 +22,8 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".MusicService"/>
+        <service android:name=".MusicService"
+            android:exported="false"/>
 
         <activity android:name=".NowPlayingActivity">
         </activity>

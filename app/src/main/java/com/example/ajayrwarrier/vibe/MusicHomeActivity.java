@@ -1,28 +1,24 @@
 package com.example.ajayrwarrier.vibe;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.MediaStore;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.MediaController;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,16 +26,13 @@ import java.util.Comparator;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import static android.R.attr.name;
-import static android.R.attr.thumbnail;
-import static android.R.drawable.ic_media_play;
-public class MusicHomeActivity extends AppCompatActivity  {
+public class MusicHomeActivity extends AppCompatActivity {
     private ArrayList<Song> songList = new ArrayList<>();
     public static MusicService musicSrv;
     private Intent playIntent;
-    private boolean isPlaying  = false;
+    private boolean isPlaying = false;
     private boolean musicBound = false;
+    private boolean status = false;
     @BindView(R.id.song_list)
     ListView songView;
     @BindView(R.id.nowSong)
@@ -54,13 +47,21 @@ public class MusicHomeActivity extends AppCompatActivity  {
     ImageButton playPauseButton;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+    BroadcastReceiver receiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_home);
         ButterKnife.bind(this);
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Song song = intent.getExtras().getParcelable("song");
+                ToolUpdate(song);
+            }
+        };
         getSongList();
-                Collections.sort(songList, new Comparator<Song>() {
+        Collections.sort(songList, new Comparator<Song>() {
             public int compare(Song a, Song b) {
                 return a.getTitle().compareTo(b.getTitle());
             }
@@ -70,29 +71,33 @@ public class MusicHomeActivity extends AppCompatActivity  {
         songView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                status = true;
                 musicSrv.setSong(Integer.parseInt(view.getTag().toString()));
                 musicSrv.playSong();
-                isPlaying=true;
+                musicSrv.makeNotification();
+                ToolUpdate(musicSrv.getSong());
+                isPlaying = true;
                 playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
-                TextView Songname= (TextView) view.findViewById(R.id.nameView);
+                TextView Songname = (TextView) view.findViewById(R.id.nameView);
                 nowSong.setText(Songname.getText());
-                TextView Songartist= (TextView) view.findViewById(R.id.artistView);
+                TextView Songartist = (TextView) view.findViewById(R.id.artistView);
                 nowArtist.setText(Songartist.getText());
-
             }
         });
         previousButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 playPrev();
+                musicSrv.makeNotification();
                 ToolUpdate(musicSrv.getSong());
             }
         });
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               playNext();
-               ToolUpdate(musicSrv.getSong());
+                playNext();
+                musicSrv.makeNotification();
+                ToolUpdate(musicSrv.getSong());
             }
         });
         playPauseButton.setOnClickListener(new View.OnClickListener() {
@@ -100,7 +105,7 @@ public class MusicHomeActivity extends AppCompatActivity  {
                 if (isPlaying) {
                     musicSrv.pausePlayer();
                     playPauseButton.setImageResource(android.R.drawable.ic_media_play);
-                }else{
+                } else {
                     musicSrv.seek(musicSrv.getPosn());
                     musicSrv.go();
                     playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
@@ -111,10 +116,11 @@ public class MusicHomeActivity extends AppCompatActivity  {
         toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(view.getContext(),NowPlayingActivity.class);
-                intent.putExtra("check",1);
-                startActivity(intent);
-
+                if (status) {
+                    Intent intent = new Intent(view.getContext(), NowPlayingActivity.class);
+                    intent.putExtra("check", 1);
+                    startActivity(intent);
+                }
             }
         });
     }
@@ -131,14 +137,13 @@ public class MusicHomeActivity extends AppCompatActivity  {
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
             int pathColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
-
             //add songs to list
             do {
                 long thisId = musicCursor.getLong(idColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
                 String thisPath = musicCursor.getString(pathColumn);
-                        songList.add(new Song(thisId, thisTitle, thisArtist,thisPath));
+                songList.add(new Song(thisId, thisTitle, thisArtist, thisPath));
             }
             while (musicCursor.moveToNext());
         }
@@ -158,42 +163,59 @@ public class MusicHomeActivity extends AppCompatActivity  {
     };
     @Override
     protected void onStart() {
-        super.onStart();
         if (playIntent == null) {
             playIntent = new Intent(this, MusicService.class);
-            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
-            startService(playIntent);
+            this.bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
+            this.startService(playIntent);
         }
+        LocalBroadcastManager.getInstance(this).registerReceiver((receiver),
+                new IntentFilter(MusicService.COPA_RESULT)
+        );
+        super.onStart();
+    }
+    @Override
+    public void onStop() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        super.onStop();
     }
     @Override
     protected void onDestroy() {
         stopService(playIntent);
+        unbindService(musicConnection);
         musicSrv = null;
         super.onDestroy();
+    }
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            this.moveTaskToBack(true);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
     @Override
     public void onResume() {
         super.onResume();
-        if(musicSrv!=null){
-            if(musicSrv.isPng()){
-                isPlaying=true;
-                ToolUpdate(musicSrv.getSong());}
-            else{
-                isPlaying=false;
-                playPauseButton.setImageResource(android.R.drawable.ic_media_play);
-                ToolUpdate(musicSrv.getSong());
+        if (musicSrv != null) {
+            if (musicBound) {
+                if (musicSrv.isPng()) {
+                    isPlaying = true;
+                    ToolUpdate(musicSrv.getSong());
+                } else {
+                    isPlaying = false;
+                    playPauseButton.setImageResource(android.R.drawable.ic_media_play);
+                    ToolUpdate(musicSrv.getSong());
+                }
             }
         }
-            }
-       private void playNext(){
+    }
+    private void playNext() {
         musicSrv.playNext();
     }
-    private void playPrev(){
+    private void playPrev() {
         musicSrv.playPrev();
     }
-    public void ToolUpdate(Song song){
+    public void ToolUpdate(Song song) {
         nowSong.setText(song.getTitle());
         nowArtist.setText(song.getArtist());
     }
-
 }
