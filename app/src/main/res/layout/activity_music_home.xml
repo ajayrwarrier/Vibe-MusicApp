@@ -10,81 +10,99 @@
     tools:context="com.example.ajayrwarrier.vibe.MusicHomeActivity">
 
     <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="150dp"
-        android:theme="?attr/actionBarTheme"
-        android:minHeight="?attr/actionBarSize"
-        android:fitsSystemWindows="true"
-        android:id="@+id/toolbar"
         android:background="@drawable/toolbackground"
+        android:fitsSystemWindows="true"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         />
 
     <TextView
-        android:text="@string/artist"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/nowArtist"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/nowSong"
-        app:layout_constraintLeft_toLeftOf="@+id/nowSong"/>
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:maxLines="1"
+        android:text="@string/artist"
+        android:textAlignment="center"
+        app:layout_constraintLeft_toLeftOf="@+id/nowSong"
+        app:layout_constraintTop_toBottomOf="@+id/nowSong"/>
 
     <TextView
-        android:text="@string/song_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/nowSong"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="center"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:maxLines="1"
+        android:scrollHorizontally="true"
+        android:text="@string/song_name"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="@+id/toolbar"
-        app:layout_constraintTop_toTopOf="@+id/toolbar"
-        android:layout_marginTop="24dp"/>
+        app:layout_constraintTop_toTopOf="@+id/toolbar"/>
 
     <ImageButton
+        android:id="@+id/playButton"
+        android:contentDescription="@string/play_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@android:drawable/ic_media_play"
-        android:id="@+id/playButton"
+        android:layout_marginTop="32dp"
         android:background="@android:color/transparent"
         app:layout_constraintLeft_toLeftOf="@+id/toolbar"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="32dp"
-        app:layout_constraintTop_toBottomOf="@+id/nowArtist"/>
+        app:layout_constraintTop_toBottomOf="@+id/nowArtist"
+        app:srcCompat="@android:drawable/ic_media_play"/>
 
     <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@android:drawable/ic_media_next"
-        android:background="@android:color/transparent"
         android:id="@+id/nextButton"
-        android:layout_marginStart="24dp"
-        app:layout_constraintTop_toTopOf="@+id/playButton"
-        app:layout_constraintLeft_toRightOf="@+id/playButton"
-        android:layout_marginLeft="24dp"/>
-
-    <ImageButton
+        android:contentDescription="@string/next_song_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@android:drawable/ic_media_previous"
+        android:layout_marginLeft="24dp"
+        android:layout_marginStart="24dp"
         android:background="@android:color/transparent"
-        android:id="@+id/previousButton"
+        app:layout_constraintLeft_toRightOf="@+id/playButton"
         app:layout_constraintTop_toTopOf="@+id/playButton"
-        app:layout_constraintRight_toLeftOf="@+id/playButton"
+        app:srcCompat="@android:drawable/ic_media_next"/>
+
+    <ImageButton
+        android:id="@+id/previousButton"
+        android:contentDescription="@string/previous_song_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
-        app:layout_constraintHorizontal_bias="0.82"
         android:layout_marginRight="24dp"
-        app:layout_constraintVertical_bias="0.75"/>
+        android:background="@android:color/transparent"
+        app:layout_constraintHorizontal_bias="0.82"
+        app:layout_constraintRight_toLeftOf="@+id/playButton"
+        app:layout_constraintTop_toTopOf="@+id/playButton"
+        app:layout_constraintVertical_bias="0.75"
+        app:srcCompat="@android:drawable/ic_media_previous"/>
 
     <ListView
+        android:id="@+id/song_list"
+        android:layout_width="0dp"
         android:layout_height="0dp"
+        android:animationCache="false"
+        android:divider="@color/white"
+        android:dividerHeight="0.5dp"
+        android:scrollingCache="false"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:id="@+id/song_list"
-        android:dividerHeight="0.5dp"
-        android:divider="@color/white"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        android:layout_width="0dp"/>
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"/>
 </android.support.constraint.ConstraintLayout>

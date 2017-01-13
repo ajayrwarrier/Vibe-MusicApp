@@ -3,4 +3,10 @@
     <string name="song_name">Song Name</string>
     <string name="artist">artist</string>
     <string name="start_time">0:00</string>
+    <string name="home_name">MusicHomeActivity</string>
+    <string name="nowplaying_name">NowPlayingActivity</string>
+    <string name="interstitial_full_screen">ca-app-pub-6322285831112645/4409613612</string>
+    <string name="play_button">Play Button</string>
+    <string name="next_song_button">Next Song</string>
+    <string name="previous_song_button">previous song button</string>
 </resources>

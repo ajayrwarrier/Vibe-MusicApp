@@ -10,11 +10,11 @@ public class Song implements Parcelable {
     private String title;
     private String artist;
     private String path;
-    public Song(long songID, String songTitle, String songArtist,String path) {
-        id=songID;
-        title=songTitle;
-        artist=songArtist;
-        this.path =path;
+    public Song(long songID, String songTitle, String songArtist, String path) {
+        id = songID;
+        title = songTitle;
+        artist = songArtist;
+        this.path = path;
     }
     protected Song(Parcel in) {
         id = in.readLong();
@@ -32,14 +32,20 @@ public class Song implements Parcelable {
             return new Song[size];
         }
     };
-    public long getID(){return id;}
-    public String getTitle(){return title;}
-    public String getArtist(){return artist;}
+    public long getID() {
+        return id;
+    }
+    public String getTitle() {
+        return title;
+    }
+    public String getArtist() {
+        return artist;
+    }
     public String getPath() {
         return path;
     }
-    public Uri getUri(){
-        return Uri.parse("file:///"+path);
+    public Uri getUri() {
+        return Uri.parse("file:///" + path);
     }
     @Override
     public int describeContents() {

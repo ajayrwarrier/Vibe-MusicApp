@@ -4,12 +4,20 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.ajayrwarrier.vibe.googleservices.Analytics;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -40,12 +48,29 @@ public class NowPlayingActivity extends AppCompatActivity {
     int check;
     Song currentSong;
     int position;
+    Tracker mTracker;
+    String ActivityName;
+    InterstitialAd mInterstitialAd;
     Handler seekHandler = new Handler();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_now_playing);
         ButterKnife.bind(this);
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId(getString(R.string.interstitial_full_screen));
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .addTestDevice("E5984852F624B87B06F860B7AC30F713")
+                .build();
+        mInterstitialAd.loadAd(adRequest);
+        mInterstitialAd.setAdListener(new AdListener() {
+            public void onAdLoaded() {
+                showInterstitial();
+            }
+        });
+        ActivityName = getString(R.string.nowplaying_name);
+        mTracker = ((Analytics) getApplication()).getDefaultTracker();
         if (getIntent().getExtras() != null) {
             check = getIntent().getExtras().getInt("check");
             Toast.makeText(this, String.valueOf(check), Toast.LENGTH_SHORT).show();
@@ -119,6 +144,13 @@ public class NowPlayingActivity extends AppCompatActivity {
             }
         });
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.i("ANALYTICS: ", "Setting screen name: " + ActivityName);
+        mTracker.setScreenName("Image~" + ActivityName);
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
+    }
     Runnable run = new Runnable() {
         @Override
         public void run() {
@@ -171,6 +203,11 @@ public class NowPlayingActivity extends AppCompatActivity {
                     }
                 });
             }
+        }
+    }
+    private void showInterstitial() {
+        if (mInterstitialAd.isLoaded()) {
+            mInterstitialAd.show();
         }
     }
 }
