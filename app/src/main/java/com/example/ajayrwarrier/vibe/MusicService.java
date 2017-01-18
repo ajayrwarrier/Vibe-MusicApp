@@ -2,7 +2,10 @@ package com.example.ajayrwarrier.vibe;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -13,8 +16,11 @@ import android.os.PowerManager;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 import java.util.ArrayList;
+
+import static com.example.ajayrwarrier.vibe.MusicHomeActivity.musicSrv;
 /**
  * Created by Ajay R Warrier on 29-12-2016.
  */
@@ -80,6 +86,12 @@ public class MusicService extends Service implements
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
+        Context context = this;
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.layout_widget);
+        ComponentName thisWidget = new ComponentName(context, SongProvider.class);
+        remoteViews.setImageViewResource(R.id.playButton,android.R.drawable.ic_media_play);
+        appWidgetManager.updateAppWidget(thisWidget, remoteViews);
     }
     public void setList(ArrayList<Song> theSongs) {
         songs = theSongs;
@@ -100,7 +112,7 @@ public class MusicService extends Service implements
         try {
             player.setDataSource(getApplicationContext(), trackUri);
         } catch (Exception e) {
-            Log.e("MUSIC SERVICE", "Error setting data source", e);
+            Log.e(getString(R.string.music_serc), getString(R.string.error1), e);
         }
         player.prepareAsync();
     }
@@ -143,7 +155,7 @@ public class MusicService extends Service implements
     }
     public void makeNotification() {
         Intent notIntent = new Intent(this, NowPlayingActivity.class);
-        notIntent.putExtra("check", 1);
+        notIntent.putExtra(getString(R.string.check), 1);
         notIntent.addCategory(Intent.CATEGORY_LAUNCHER);
         PendingIntent pendInt = PendingIntent.getActivity(this, 0,
                 notIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -152,7 +164,7 @@ public class MusicService extends Service implements
                 .setSmallIcon(android.R.drawable.ic_media_play)
                 .setTicker(getSong().getTitle())
                 .setOngoing(true)
-                .setContentTitle("Playing")
+                .setContentTitle(getString(R.string.playing))
                 .setContentText(getSong().getTitle());
         Notification not = builder.build();
         startForeground(NOTIFY_ID, not);
@@ -160,7 +172,15 @@ public class MusicService extends Service implements
     public void sendResult(Song song) {
         Intent intent = new Intent(COPA_RESULT);
         if (song != null)
-            intent.putExtra("song", song);
+            intent.putExtra(getString(R.string.song), song);
         broadcaster.sendBroadcast(intent);
+        Context context = this;
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.layout_widget);
+        ComponentName thisWidget = new ComponentName(context, SongProvider.class);
+        remoteViews.setTextViewText(R.id.nowSong,musicSrv.getSong().getTitle());
+        remoteViews.setTextViewText(R.id.nowArtist,musicSrv.getSong().getArtist());
+        remoteViews.setImageViewResource(R.id.playButton,android.R.drawable.ic_media_pause);
+        appWidgetManager.updateAppWidget(thisWidget, remoteViews);
     }
 }

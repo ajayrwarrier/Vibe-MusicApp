@@ -34,6 +34,16 @@
 
         <activity android:name=".NowPlayingActivity">
         </activity>
+        <receiver android:name=".SongProvider" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.WIDGET_BUTTON"/>
+                <action android:name="android.appwidget.action.WIDGET_BUTTON_NEXT"/>
+                <action android:name="android.appwidget.action.WIDGET_BUTTON_PREVIOUS"/>
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                       android:resource="@xml/song_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

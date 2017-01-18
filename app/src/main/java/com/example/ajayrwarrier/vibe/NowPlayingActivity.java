@@ -52,6 +52,12 @@ public class NowPlayingActivity extends AppCompatActivity {
     String ActivityName;
     InterstitialAd mInterstitialAd;
     Handler seekHandler = new Handler();
+    Runnable run = new Runnable() {
+        @Override
+        public void run() {
+            seekUpdation();
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -151,12 +157,6 @@ public class NowPlayingActivity extends AppCompatActivity {
         mTracker.setScreenName("Image~" + ActivityName);
         mTracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
-    Runnable run = new Runnable() {
-        @Override
-        public void run() {
-            seekUpdation();
-        }
-    };
     public void seekUpdation() {
         if (musService != null) {
             startTime.setText(getTimeString(musService.getPosn()));

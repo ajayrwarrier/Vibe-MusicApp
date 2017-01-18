@@ -34,12 +34,7 @@ import java.util.Comparator;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 public class MusicHomeActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-    private ArrayList<Song> songList = new ArrayList<>();
     public static MusicService musicSrv;
-    private Intent playIntent;
-    private boolean isPlaying = false;
-    private boolean musicBound = false;
-    private boolean status = false;
     @BindView(R.id.song_list)
     ListView songView;
     @BindView(R.id.nowSong)
@@ -57,6 +52,24 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
     BroadcastReceiver receiver;
     Tracker mTracker;
     String ActivityName;
+    private ArrayList<Song> songList = new ArrayList<>();
+    private Intent playIntent;
+    private boolean isPlaying;
+    private boolean musicBound = false;
+    private boolean status = false;
+    private ServiceConnection musicConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
+            musicSrv = binder.getService();
+            musicSrv.setList(songList);
+            musicBound = true;
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            musicBound = false;
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,7 +82,7 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Song song = intent.getExtras().getParcelable("song");
+                Song song = intent.getExtras().getParcelable(getString(R.string.song));
                 ToolUpdate(song);
             }
         };
@@ -85,7 +98,6 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 status = true;
-                Log.e("THIS IS SPARTAAAAAA", view.getTag().toString());
                 musicSrv.setSong(position);
                 musicSrv.playSong();
                 musicSrv.makeNotification();
@@ -132,29 +144,18 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
             public void onClick(View view) {
                 if (status) {
                     Intent intent = new Intent(view.getContext(), NowPlayingActivity.class);
-                    intent.putExtra("check", 1);
+                    intent.putExtra(getString(R.string.check), 1);
                     startActivity(intent);
                 }
             }
         });
         nowArtist.setSelected(true);
         nowSong.setSelected(true);
+        if (musicSrv != null)
+            isPlaying = musicSrv.isPng();
     }
     public void getSongList() {
     }
-    private ServiceConnection musicConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
-            musicSrv = binder.getService();
-            musicSrv.setList(songList);
-            musicBound = true;
-        }
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            musicBound = false;
-        }
-    };
     @Override
     protected void onStart() {
         if (playIntent == null) {
@@ -189,14 +190,15 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
     @Override
     public void onResume() {
         super.onResume();
-        Log.i("ANALYTICS: ", "Setting screen name: " + ActivityName);
-        mTracker.setScreenName("Image~" + ActivityName);
+        Log.i(getString(R.string.analytics), getString(R.string.setscreenname) + ActivityName);
+        mTracker.setScreenName(getString(R.string.image) + ActivityName);
         mTracker.send(new HitBuilders.ScreenViewBuilder().build());
         if (musicSrv != null) {
             if (musicBound) {
                 if (musicSrv.isPng()) {
                     isPlaying = true;
                     ToolUpdate(musicSrv.getSong());
+                    playPauseButton.setImageResource(android.R.drawable.ic_media_pause);
                 } else {
                     isPlaying = false;
                     playPauseButton.setImageResource(android.R.drawable.ic_media_play);

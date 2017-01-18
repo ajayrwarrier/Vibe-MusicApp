@@ -9,4 +9,18 @@
     <string name="play_button">Play Button</string>
     <string name="next_song_button">Next Song</string>
     <string name="previous_song_button">previous song button</string>
+    <string name="artist_descr">Name of the Artist</string>
+    <string name="songdescr">Name of the Song</string>
+    <string name="album_art">Album Art</string>
+    <string name="thumbnail">Thumbnail</string>
+    <string name="heart_sign">Heart Sign</string>
+    <string name="song">song</string>
+    <string name="check">check</string>
+    <string name="analytics">"ANALYTICS: "</string>
+    <string name="setscreenname">"Setting screen name: "</string>
+    <string name="image">Image~</string>
+    <string name="music_serc">MUSIC SERVICE</string>
+    <string name="error1">Error setting data source</string>
+    <string name="playing">Playing</string>
+    <string name="update">onUpdate</string>
 </resources>
