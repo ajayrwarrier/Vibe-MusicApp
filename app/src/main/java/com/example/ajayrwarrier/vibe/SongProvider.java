@@ -21,6 +21,7 @@ public class SongProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         final int N = appWidgetIds.length;
+        if(musicSrv!=null)
         isPlaying = musicSrv.isPng();
         for (int i = 0; i < N; i++) {
             int appWidgetId = appWidgetIds[i];

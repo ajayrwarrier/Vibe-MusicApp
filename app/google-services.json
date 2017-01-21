@@ -1,7 +1,9 @@
 {
   "project_info": {
     "project_number": "426398936128",
-    "project_id": "vibe-5fbd3"
+    "firebase_url": "https://vibe-5fbd3.firebaseio.com",
+    "project_id": "vibe-5fbd3",
+    "storage_bucket": "vibe-5fbd3.appspot.com"
   },
   "client": [
     {
@@ -11,7 +13,16 @@
           "package_name": "com.example.ajayrwarrier.vibe"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "426398936128-si28anjrmbciaebq0f8bvamfnb3smne6.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "426398936128-e8gbhf25rklmbjvfj5ac8racv6pesiag.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCyJV3y-NOY6scHVy5_Gk99soC3uGzyq-k"
@@ -29,7 +40,7 @@
           "other_platform_oauth_client": []
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }

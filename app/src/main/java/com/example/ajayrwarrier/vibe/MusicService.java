@@ -120,7 +120,9 @@ public class MusicService extends Service implements
         songPosn = songIndex;
     }
     public Song getSong() {
-        return songs.get(songPosn);
+        if(songs.size()>0){
+        return songs.get(songPosn);}
+        else return null;
     }
     public int getPosn() {
         return player.getCurrentPosition();

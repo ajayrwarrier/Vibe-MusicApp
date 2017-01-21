@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.example.ajayrwarrier.vibe"    >
+          package="com.example.ajayrwarrier.vibe">
 
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -9,12 +9,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
+        android:name=".googleservices.Analytics"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:name=".googleservices.Analytics">
+        android:theme="@style/AppTheme">
         <activity
             android:name=".MusicHomeActivity"
             android:label="@string/app_name"
@@ -27,23 +27,32 @@
         <activity
             android:name="com.google.android.gms.ads.AdActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
-            android:theme="@android:style/Theme.Translucent" />
+            android:theme="@android:style/Theme.Translucent"/>
+
         <service
             android:name=".MusicService"
             android:exported="false"/>
 
         <activity android:name=".NowPlayingActivity">
         </activity>
-        <receiver android:name=".SongProvider" >
+
+        <receiver android:name=".SongProvider">
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
                 <action android:name="android.appwidget.action.WIDGET_BUTTON"/>
                 <action android:name="android.appwidget.action.WIDGET_BUTTON_NEXT"/>
                 <action android:name="android.appwidget.action.WIDGET_BUTTON_PREVIOUS"/>
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider"
-                       android:resource="@xml/song_widget_info" />
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/song_widget_info"/>
         </receiver>
+
+        <activity android:name=".SignUpActivity">
+        </activity>
+        <activity android:name=".LoginActivity">
+        </activity>
     </application>
 
 </manifest>

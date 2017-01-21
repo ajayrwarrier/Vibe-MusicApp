@@ -14,7 +14,7 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file("keystore.keystore")
+            storeFile file("keystore.jks")
             storePassword "vibethemusicapp"
             keyAlias "Vibe"
             keyPassword "vibethemusicapp"
@@ -24,6 +24,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -43,6 +44,8 @@ dependencies {
     compile 'com.github.wseemann:FFmpegMediaMetadataRetriever:1.0.14'
     compile 'com.google.android.gms:play-services-analytics:10.0.1'
     compile 'com.google.android.gms:play-services-ads:10.0.1'
-
+    compile 'com.google.firebase:firebase-auth:10.0.1'
+    compile 'com.google.firebase:firebase-core:10.0.1'
+    compile 'com.google.firebase:firebase-database:10.0.1'
 }
 apply plugin: 'com.google.gms.google-services'

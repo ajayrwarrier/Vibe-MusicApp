@@ -8,10 +8,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -22,10 +26,13 @@ import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.ajayrwarrier.vibe.googleservices.Analytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,9 +56,13 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
     ImageButton playPauseButton;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+    @BindView(R.id.logout_button)
+    ImageButton signoutButton;
     BroadcastReceiver receiver;
     Tracker mTracker;
     String ActivityName;
+    private FirebaseAuth.AuthStateListener authListener;
+    private FirebaseAuth auth;
     private ArrayList<Song> songList = new ArrayList<>();
     private Intent playIntent;
     private boolean isPlaying;
@@ -75,6 +86,29 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_home);
         ButterKnife.bind(this);
+        //get firebase auth instance
+        auth = FirebaseAuth.getInstance();
+        authListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user == null) {
+                    // if user is null launch login activity
+                    startActivity(new Intent(MusicHomeActivity.this, LoginActivity.class));
+                    finish();
+                } else {
+                    Toast.makeText(MusicHomeActivity.this, (getString(R.string.hello) + user.getEmail() + ""), Toast.LENGTH_SHORT).show();
+                    ;
+                }
+            }
+        };
+        signoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                signOutButton();
+            }
+        });
+        isStoragePermissionGranted();
         getLoaderManager().initLoader(0, null, this);
         Analytics application = (Analytics) getApplication();
         ActivityName = getString(R.string.home_name);
@@ -86,7 +120,6 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
                 ToolUpdate(song);
             }
         };
-        getSongList();
         Collections.sort(songList, new Comparator<Song>() {
             public int compare(Song a, Song b) {
                 return a.getTitle().compareTo(b.getTitle());
@@ -154,10 +187,10 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
         if (musicSrv != null)
             isPlaying = musicSrv.isPng();
     }
-    public void getSongList() {
-    }
     @Override
     protected void onStart() {
+        SongAdapter songAdt = new SongAdapter(this, songList);
+        songView.setAdapter(songAdt);
         if (playIntent == null) {
             playIntent = new Intent(this, MusicService.class);
             this.bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
@@ -167,10 +200,14 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
                 new IntentFilter(MusicService.COPA_RESULT)
         );
         super.onStart();
+        auth.addAuthStateListener(authListener);
     }
     @Override
     public void onStop() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        if (authListener != null) {
+            auth.removeAuthStateListener(authListener);
+        }
         super.onStop();
     }
     @Override
@@ -190,6 +227,8 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
     @Override
     public void onResume() {
         super.onResume();
+        SongAdapter songAdt = new SongAdapter(this, songList);
+        songView.setAdapter(songAdt);
         Log.i(getString(R.string.analytics), getString(R.string.setscreenname) + ActivityName);
         mTracker.setScreenName(getString(R.string.image) + ActivityName);
         mTracker.send(new HitBuilders.ScreenViewBuilder().build());
@@ -202,7 +241,8 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
                 } else {
                     isPlaying = false;
                     playPauseButton.setImageResource(android.R.drawable.ic_media_play);
-                    ToolUpdate(musicSrv.getSong());
+                    if (musicSrv.getSong() != null)
+                        ToolUpdate(musicSrv.getSong());
                 }
             }
         }
@@ -247,5 +287,31 @@ public class MusicHomeActivity extends AppCompatActivity implements LoaderManage
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         loader.reset();
+    }
+    public boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v("", getString(R.string.prem_granted));
+                return true;
+            } else {
+                Log.v("", getString(R.string.perm_revoked));
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        } else { //permission is automatically granted on sdk<23 upon installation
+            Log.v("", getString(R.string.prem_granted));
+            return true;
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Log.v("", getString(R.string.perm) + permissions[0] + getString(R.string.was) + grantResults[0]);
+        }
+    }
+    public void signOutButton() {
+        auth.signOut();
     }
 }
